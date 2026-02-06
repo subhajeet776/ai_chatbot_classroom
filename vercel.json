@@ -3,7 +3,7 @@
   "outputDirectory": "public",
   "functions": {
     "api/chat.py": {
-      "runtime": "python3.10"
+      "runtime": "python@3.10"
     }
   },
   "routes": [
@@ -12,4 +12,3 @@
     { "src": "/", "dest": "/index.html" }
   ]
 }
-
