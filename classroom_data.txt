@@ -1,0 +1,46 @@
+Class: B.Tech Computer Science – Semester 2
+
+Class Timing:
+Classes start at 9:00 AM and end at 4:00 PM.
+Lunch break is from 1:00 PM to 2:00 PM.
+
+Subjects and Teachers:
+Mathematics II is taught by Dr. R. Sharma.
+Programming in Python is taught by Ms. Neha Verma.
+Data Structures is taught by Mr. Amit Das.
+Operating Systems is taught by Mr. S. Kumar.
+DBMS is taught by Ms. Anjali Singh.
+
+Weekly Tests:
+Unit tests are conducted every Friday.
+Lab evaluations are conducted every alternate Saturday.
+
+Examinations:
+Mid-semester exams start from 18 March.
+End-semester exams start from 10 May.
+The OS exam is scheduled on 22 March.
+The DBMS exam is scheduled on 25 March.
+
+Assignments:
+Python assignment 1 submission deadline is 12 March.
+DBMS mini project submission deadline is 30 March.
+Data Structures assignment is due every Monday.
+
+Laboratory Details:
+Python Lab is held on Tuesdays from 2 PM to 4 PM.
+DBMS Lab is held on Thursdays from 10 AM to 12 PM.
+Operating Systems Lab is held on Fridays from 9 AM to 11 AM.
+
+Classroom Rules:
+Students must carry their ID cards.
+Mobile phones are not allowed during lectures.
+Attendance below 75 percent is not permitted for exams.
+Maintain silence and discipline in class.
+
+Class Representative:
+Class Representative is Rohit Kumar.
+Assistant Class Representative is Sneha Patel.
+
+Notices:
+Next guest lecture is scheduled on 5 April.
+Internal assessment marks will be announced next week.
