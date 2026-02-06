@@ -1,14 +1,8 @@
 {
-  "buildCommand": "echo 'No build needed'",
-  "outputDirectory": "public",
-  "functions": {
-    "api/chat.py": {
-      "runtime": "python@3.10"
-    }
-  },
   "routes": [
     { "handle": "filesystem" },
     { "src": "/api/(.*)", "dest": "/api/$1" },
-    { "src": "/", "dest": "/index.html" }
+    { "src": "/", "dest": "/public/index.html" }
   ]
 }
+
