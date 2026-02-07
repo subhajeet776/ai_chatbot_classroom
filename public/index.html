@@ -1,43 +1,43 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Classroom Chatbot</title>
-    <link rel="stylesheet" href="/style.css">
+  <title>Classroom Chatbot</title>
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 
 <div class="chat-container">
-    <h2>🤖 Classroom AI Chatbot</h2>
-    <div id="chat"></div>
+  <h2>🤖 Classroom AI Chatbot</h2>
+  <div id="chat"></div>
 
-    <input id="msg" placeholder="Ask something..." />
-    <button onclick="send()">Send</button>
+  <input id="msg" placeholder="Ask something..." />
+  <button onclick="send()">Send</button>
 </div>
 
 <script>
 function send() {
-    let msg = document.getElementById("msg").value;
-    if (!msg) return;
+  const msg = document.getElementById("msg").value;
+  const chat = document.getElementById("chat");
 
-    document.getElementById("chat").innerHTML += 
-        "<p><b>You:</b> " + msg + "</p>";
+  chat.innerHTML += "<p><b>You:</b> " + msg + "</p>";
 
-    fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: msg })
-    })
-    .then(res => res.json())
-    .then(data => {
-        document.getElementById("chat").innerHTML += 
-            "<p><b>Bot:</b> " + data.reply + "</p>";
-    })
-    .catch(() => {
-        document.getElementById("chat").innerHTML += 
-            "<p><b>Error:</b> API not responding</p>";
-    });
+  fetch("/api/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message: msg })
+  })
+  .then(res => {
+    if (!res.ok) throw new Error("API error");
+    return res.json();
+  })
+  .then(data => {
+    chat.innerHTML += "<p><b>Bot:</b> " + data.reply + "</p>";
+  })
+  .catch(() => {
+    chat.innerHTML += "<p><b>Error:</b> API not responding</p>";
+  });
 
-    document.getElementById("msg").value = "";
+  document.getElementById("msg").value = "";
 }
 </script>
 
