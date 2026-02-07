@@ -15,24 +15,26 @@
 </div>
 
 <script>
-    fetch("/api/chat", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ message: userInput })
-})
-
 function send() {
-    let msg = document.getElementById("msg").value;
-    document.getElementById("chat").innerHTML += "<p><b>You:</b> " + msg + "</p>";
+    let msg = document.getElementById("msg").value.trim();
+    if (!msg) return;
+
+    document.getElementById("chat").innerHTML += 
+        "<p><b>You:</b> " + msg + "</p>";
 
     fetch("/api/chat", {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({message: msg})
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: msg })
     })
     .then(res => res.json())
     .then(data => {
-        document.getElementById("chat").innerHTML += "<p><b>Bot:</b> " + data.reply + "</p>";
+        document.getElementById("chat").innerHTML += 
+            "<p><b>Bot:</b> " + data.reply + "</p>";
+    })
+    .catch(err => {
+        document.getElementById("chat").innerHTML += 
+            "<p><b>Error:</b> API not responding</p>";
     });
 
     document.getElementById("msg").value = "";
