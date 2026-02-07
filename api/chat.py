@@ -1,32 +1,34 @@
 import json
 
-def handler(event, context):
-    # Allow only POST
-    if event.get("httpMethod") != "POST":
+def handler(request):
+    try:
+        if request.method != "POST":
+            return {
+                "statusCode": 405,
+                "headers": {"Content-Type": "application/json"},
+                "body": json.dumps({"error": "Method not allowed"})
+            }
+
+        body = json.loads(request.body or "{}")
+        message = body.get("message", "").lower()
+
+        if "dbms" in message:
+            reply = "DBMS is taught by your DBMS faculty."
+        else:
+            reply = "I am still learning about your classroom."
+
         return {
-            "statusCode": 405,
-            "headers": {"Content-Type": "application/json"},
-            "body": json.dumps({"error": "Method not allowed"})
+            "statusCode": 200,
+            "headers": {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*"
+            },
+            "body": json.dumps({"reply": reply})
         }
 
-    # Parse request body
-    try:
-        body = json.loads(event.get("body", "{}"))
-    except json.JSONDecodeError:
-        body = {}
-
-    message = body.get("message", "").lower()
-
-    # Simple classroom logic
-    if "dbms" in message:
-        reply = "DBMS is taught by your DBMS faculty."
-    elif "teacher" in message:
-        reply = "Your classroom has different subject teachers."
-    else:
-        reply = "I am still learning about your classroom."
-
-    return {
-        "statusCode": 200,
-        "headers": {"Content-Type": "application/json"},
-        "body": json.dumps({"reply": reply})
-    }
+    except Exception as e:
+        return {
+            "statusCode": 500,
+            "headers": {"Content-Type": "application/json"},
+            "body": json.dumps({"error": str(e)})
+        }

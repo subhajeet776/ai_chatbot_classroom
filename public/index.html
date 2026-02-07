@@ -16,7 +16,7 @@
 
 <script>
 function send() {
-    let msg = document.getElementById("msg").value.trim();
+    let msg = document.getElementById("msg").value;
     if (!msg) return;
 
     document.getElementById("chat").innerHTML += 
@@ -32,7 +32,7 @@ function send() {
         document.getElementById("chat").innerHTML += 
             "<p><b>Bot:</b> " + data.reply + "</p>";
     })
-    .catch(err => {
+    .catch(() => {
         document.getElementById("chat").innerHTML += 
             "<p><b>Error:</b> API not responding</p>";
     });
