@@ -5,27 +5,19 @@ def handler(request):
         return {
             "statusCode": 405,
             "headers": {"Content-Type": "application/json"},
-            "body": json.dumps({"error": "Only POST allowed"})
+            "body": json.dumps({"error": "Method not allowed"})
         }
 
-    try:
-        body = json.loads(request.body)
-        message = body.get("message", "").lower()
+    body = json.loads(request.body or "{}")
+    message = body.get("message", "").lower()
 
-        if "dbms" in message:
-            reply = "DBMS is taught by your DBMS faculty."
-        else:
-            reply = "I am still learning about your classroom."
+    if "dbms" in message:
+        reply = "DBMS is taught by your DBMS faculty."
+    else:
+        reply = "I am still learning about your classroom."
 
-        return {
-            "statusCode": 200,
-            "headers": {"Content-Type": "application/json"},
-            "body": json.dumps({"reply": reply})
-        }
-
-    except Exception as e:
-        return {
-            "statusCode": 500,
-            "headers": {"Content-Type": "application/json"},
-            "body": json.dumps({"error": str(e)})
-        }
+    return {
+        "statusCode": 200,
+        "headers": {"Content-Type": "application/json"},
+        "body": json.dumps({"reply": reply})
+    }

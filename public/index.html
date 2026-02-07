@@ -15,6 +15,12 @@
 </div>
 
 <script>
+    fetch("/api/chat", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ message: userInput })
+})
+
 function send() {
     let msg = document.getElementById("msg").value;
     document.getElementById("chat").innerHTML += "<p><b>You:</b> " + msg + "</p>";
