@@ -1,6 +1,6 @@
 import json
 
-def main(request):
+def handler(request):
     if request.method != "POST":
         return {
             "statusCode": 405,
