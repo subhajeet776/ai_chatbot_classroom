@@ -1,2 +1,5 @@
 openai>=1.0.0
 PyPDF2
+# Free alternatives (use one; set GEMINI_API_KEY or GROQ_API_KEY in Vercel):
+google-generativeai>=0.8.0
+groq>=0.4.0

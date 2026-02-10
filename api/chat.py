@@ -2,16 +2,70 @@ import json
 from http.server import BaseHTTPRequestHandler
 import os
 from PyPDF2 import PdfReader
-from openai import OpenAI
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-def get_client():
-    api_key = os.environ.get("OPENAI_API_KEY")
-    if not api_key:
-        raise ValueError("OPENAI_API_KEY environment variable is not set")
-    return OpenAI(api_key=api_key)
+def _get_provider():
+    """Choose provider: openai, gemini (free), or groq (free). Uses first available API key."""
+    if os.environ.get("OPENAI_API_KEY"):
+        return "openai"
+    if os.environ.get("GEMINI_API_KEY"):
+        return "gemini"
+    if os.environ.get("GROQ_API_KEY"):
+        return "groq"
+    return None
+
+
+def _call_openai(context, question):
+    from openai import OpenAI
+    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": context},
+            {"role": "user", "content": question},
+        ],
+    )
+    return response.choices[0].message.content
+
+
+def _call_gemini(context, question):
+    import google.generativeai as genai
+    genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
+    model = genai.GenerativeModel("gemini-1.5-flash")
+    full_prompt = f"{context}\n\nQuestion: {question}"
+    response = model.generate_content(full_prompt)
+    return response.text or ""
+
+
+def _call_groq(context, question):
+    from groq import Groq
+    client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+    response = client.chat.completions.create(
+        model="llama-3.1-8b-instant",
+        messages=[
+            {"role": "system", "content": context},
+            {"role": "user", "content": question},
+        ],
+    )
+    return response.choices[0].message.content
+
+
+def get_reply(context, question):
+    provider = _get_provider()
+    if not provider:
+        raise ValueError(
+            "No LLM API key set. Add one of: OPENAI_API_KEY, GEMINI_API_KEY (free), or GROQ_API_KEY (free). "
+            "Get Gemini key at aistudio.google.com/apikey or Groq at console.groq.com"
+        )
+    if provider == "openai":
+        return _call_openai(context, question)
+    if provider == "gemini":
+        return _call_gemini(context, question)
+    if provider == "groq":
+        return _call_groq(context, question)
+    raise ValueError(f"Unknown provider: {provider}")
 
 
 def load_classroom_data():
@@ -79,12 +133,6 @@ class handler(BaseHTTPRequestHandler):
             _send_json(self, 400, {"error": "message is required"})
             return
 
-        try:
-            client = get_client()
-        except ValueError as e:
-            _send_json(self, 500, {"error": str(e)})
-            return
-
         classroom_text = load_classroom_data()
         pdf_text = load_pdfs()
 
@@ -101,14 +149,10 @@ PDF DATA:
 """
 
         try:
-            response = client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[
-                    {"role": "system", "content": context},
-                    {"role": "user", "content": question},
-                ],
-            )
-            reply = response.choices[0].message.content
+            reply = get_reply(context, question)
+        except ValueError as e:
+            _send_json(self, 500, {"error": str(e)})
+            return
         except Exception as e:
             err_str = str(e)
             if "429" in err_str or "insufficient_quota" in err_str or "quota" in err_str.lower():
@@ -116,11 +160,11 @@ PDF DATA:
                     self,
                     429,
                     {
-                        "error": "OpenAI quota exceeded. Please check your plan and billing at https://platform.openai.com/account/billing",
+                        "error": "API quota exceeded. If using OpenAI, check billing at platform.openai.com/account/billing. Or use free options: set GEMINI_API_KEY or GROQ_API_KEY instead.",
                     },
                 )
             else:
-                _send_json(self, 500, {"error": f"OpenAI request failed: {err_str}"})
+                _send_json(self, 500, {"error": f"LLM request failed: {err_str}"})
             return
 
         _send_json(self, 200, {"reply": reply})
