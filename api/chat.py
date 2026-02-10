@@ -33,7 +33,8 @@ def _call_openai(context, question):
 def _call_gemini(context, question):
     import google.generativeai as genai
     genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    # Use a current model ID (gemini-1.5-flash was retired; 2.0/2.5 are available)
+    model = genai.GenerativeModel("gemini-2.0-flash")
     full_prompt = f"{context}\n\nQuestion: {question}"
     response = model.generate_content(full_prompt)
     return response.text or ""
