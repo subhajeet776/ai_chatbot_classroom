@@ -21,20 +21,21 @@ function send() {
 
   chat.innerHTML += "<p><b>You:</b> " + msg + "</p>";
 
-  fetch("/api/chat", {
+  var apiUrl = (typeof API_BASE_URL !== "undefined" && API_BASE_URL) ? API_BASE_URL + "/api/chat" : "/api/chat";
+  fetch(apiUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message: msg })
   })
-  .then(res => {
-    if (!res.ok) throw new Error("API error");
-    return res.json();
-  })
+  .then(res => res.json().then(function(data) {
+    if (!res.ok) throw new Error(data.error || "API error");
+    return data;
+  }))
   .then(data => {
-    chat.innerHTML += "<p><b>Bot:</b> " + data.reply + "</p>";
+    chat.innerHTML += "<p><b>Bot:</b> " + (data.reply || "").replace(/</g, "&lt;") + "</p>";
   })
-  .catch(() => {
-    chat.innerHTML += "<p><b>Error:</b> API not responding</p>";
+  .catch(function(err) {
+    chat.innerHTML += "<p><b>Error:</b> " + (err.message || "API not responding").replace(/</g, "&lt;") + "</p>";
   });
 
   document.getElementById("msg").value = "";
