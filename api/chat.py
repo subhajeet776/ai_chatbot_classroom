@@ -7,13 +7,23 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def _get_provider():
-    """Choose provider: openai, gemini (free), or groq (free). Uses first available API key."""
-    if os.environ.get("OPENAI_API_KEY"):
-        return "openai"
+    """Choose provider: gemini (free), groq (free), or openai. Prefers free providers when keys are set."""
+    # Explicit choice (e.g. LLM_PROVIDER=gemini in Vercel)
+    forced = os.environ.get("LLM_PROVIDER", "").strip().lower()
+    if forced in ("gemini", "groq", "openai"):
+        if forced == "gemini" and os.environ.get("GEMINI_API_KEY"):
+            return "gemini"
+        if forced == "groq" and os.environ.get("GROQ_API_KEY"):
+            return "groq"
+        if forced == "openai" and os.environ.get("OPENAI_API_KEY"):
+            return "openai"
+    # Prefer free providers when multiple keys exist (so Gemini/Groq win over exhausted OpenAI)
     if os.environ.get("GEMINI_API_KEY"):
         return "gemini"
     if os.environ.get("GROQ_API_KEY"):
         return "groq"
+    if os.environ.get("OPENAI_API_KEY"):
+        return "openai"
     return None
 
 
