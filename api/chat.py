@@ -110,7 +110,17 @@ PDF DATA:
             )
             reply = response.choices[0].message.content
         except Exception as e:
-            _send_json(self, 500, {"error": f"OpenAI request failed: {str(e)}"})
+            err_str = str(e)
+            if "429" in err_str or "insufficient_quota" in err_str or "quota" in err_str.lower():
+                _send_json(
+                    self,
+                    429,
+                    {
+                        "error": "OpenAI quota exceeded. Please check your plan and billing at https://platform.openai.com/account/billing",
+                    },
+                )
+            else:
+                _send_json(self, 500, {"error": f"OpenAI request failed: {err_str}"})
             return
 
         _send_json(self, 200, {"reply": reply})

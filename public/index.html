@@ -35,7 +35,11 @@ function send() {
     chat.innerHTML += "<p><b>Bot:</b> " + (data.reply || "").replace(/</g, "&lt;") + "</p>";
   })
   .catch(function(err) {
-    chat.innerHTML += "<p><b>Error:</b> " + (err.message || "API not responding").replace(/</g, "&lt;") + "</p>";
+    var msg = err.message || "API not responding";
+    if (msg.indexOf("quota") !== -1 || msg.indexOf("429") !== -1 || msg.indexOf("billing") !== -1) {
+      msg = "API limit reached. Check your OpenAI billing at platform.openai.com/account/billing and add credits or a payment method.";
+    }
+    chat.innerHTML += "<p><b>Error:</b> " + msg.replace(/</g, "&lt;") + "</p>";
   });
 
   document.getElementById("msg").value = "";
