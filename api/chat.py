@@ -160,22 +160,58 @@ PDF DATA:
 """
 
         try:
+            provider = _get_provider()
+            if not provider:
+                _send_json(
+                    self,
+                    500,
+                    {
+                        "error": "No LLM API key set. Add GEMINI_API_KEY (free at aistudio.google.com/apikey) or GROQ_API_KEY (free at console.groq.com)"
+                    },
+                )
+                return
             reply = get_reply(context, question)
         except ValueError as e:
             _send_json(self, 500, {"error": str(e)})
             return
         except Exception as e:
             err_str = str(e)
+            provider_name = _get_provider() or "unknown"
             if "429" in err_str or "insufficient_quota" in err_str or "quota" in err_str.lower():
-                _send_json(
-                    self,
-                    429,
-                    {
-                        "error": "API quota exceeded. If using OpenAI, check billing at platform.openai.com/account/billing. Or use free options: set GEMINI_API_KEY or GROQ_API_KEY instead.",
-                    },
-                )
+                if provider_name == "openai":
+                    _send_json(
+                        self,
+                        429,
+                        {
+                            "error": f"[{provider_name.upper()}] Quota exceeded. Check billing at platform.openai.com/account/billing. Or switch to free: set GEMINI_API_KEY or GROQ_API_KEY instead.",
+                        },
+                    )
+                elif provider_name == "gemini":
+                    _send_json(
+                        self,
+                        429,
+                        {
+                            "error": f"[{provider_name.upper()}] Quota exceeded. Check your Gemini API usage at aistudio.google.com. You may need to wait or upgrade your plan.",
+                        },
+                    )
+                elif provider_name == "groq":
+                    _send_json(
+                        self,
+                        429,
+                        {
+                            "error": f"[{provider_name.upper()}] Rate limit reached. Check your Groq usage at console.groq.com. Free tier has daily limits.",
+                        },
+                    )
+                else:
+                    _send_json(
+                        self,
+                        429,
+                        {
+                            "error": f"[{provider_name.upper()}] Quota exceeded. Check your API provider's billing/usage page.",
+                        },
+                    )
             else:
-                _send_json(self, 500, {"error": f"LLM request failed: {err_str}"})
+                _send_json(self, 500, {"error": f"[{provider_name.upper()}] Request failed: {err_str}"})
             return
 
         _send_json(self, 200, {"reply": reply})
