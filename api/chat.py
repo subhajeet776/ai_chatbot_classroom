@@ -64,18 +64,40 @@ def _call_groq(context, question):
 
 
 def get_reply(context, question):
+    """Get reply from LLM, with automatic fallback if quota exceeded."""
     provider = _get_provider()
     if not provider:
         raise ValueError(
             "No LLM API key set. Add one of: OPENAI_API_KEY, GEMINI_API_KEY (free), or GROQ_API_KEY (free). "
             "Get Gemini key at aistudio.google.com/apikey or Groq at console.groq.com"
         )
-    if provider == "openai":
-        return _call_openai(context, question)
-    if provider == "gemini":
-        return _call_gemini(context, question)
-    if provider == "groq":
-        return _call_groq(context, question)
+    
+    # Try primary provider
+    try:
+        if provider == "openai":
+            return _call_openai(context, question)
+        if provider == "gemini":
+            return _call_gemini(context, question)
+        if provider == "groq":
+            return _call_groq(context, question)
+    except Exception as e:
+        err_str = str(e)
+        # If quota exceeded and we have a fallback, try it
+        if ("429" in err_str or "quota" in err_str.lower() or "insufficient_quota" in err_str.lower()):
+            # Try fallback providers
+            if provider == "gemini" and os.environ.get("GROQ_API_KEY"):
+                try:
+                    return _call_groq(context, question)
+                except:
+                    pass  # Fall through to raise original error
+            elif provider == "groq" and os.environ.get("GEMINI_API_KEY"):
+                try:
+                    return _call_gemini(context, question)
+                except:
+                    pass  # Fall through to raise original error
+        # Re-raise original error if no fallback worked
+        raise
+    
     raise ValueError(f"Unknown provider: {provider}")
 
 
@@ -187,11 +209,16 @@ PDF DATA:
                         },
                     )
                 elif provider_name == "gemini":
+                    fallback_msg = ""
+                    if os.environ.get("GROQ_API_KEY"):
+                        fallback_msg = " Trying Groq fallback..."
+                    else:
+                        fallback_msg = " Add GROQ_API_KEY in Vercel for automatic fallback (free at console.groq.com)."
                     _send_json(
                         self,
                         429,
                         {
-                            "error": f"[{provider_name.upper()}] Quota exceeded. Check your Gemini API usage at aistudio.google.com. You may need to wait or upgrade your plan.",
+                            "error": f"[{provider_name.upper()}] Quota exceeded. Check usage at aistudio.google.com/usage. Daily limit resets at midnight PT.{fallback_msg}",
                         },
                     )
                 elif provider_name == "groq":
